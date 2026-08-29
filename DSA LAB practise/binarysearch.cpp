@@ -2,8 +2,10 @@
 using namespace std;
 
 // Returns location of x in arr[l..r] if present, otherwise -1
-int binarySearch(int arr[], int l, int r, int x) {
-    while (l <= r) {
+int binarySearch(int arr[], int l, int r, int x)
+{
+    while (l <= r)
+    {
         int m = l + (r - l) / 2;
 
         // Check if x is present at mid
@@ -22,14 +24,15 @@ int binarySearch(int arr[], int l, int r, int x) {
     return -1;
 }
 
-int main() {
-    int arr[] = { 2, 3, 4,6,9, 10, 40,44 };
+int main()
+{
+    int arr[] = {2, 3, 4, 6, 9, 10, 40, 44};
     int x = 10;
     int n = sizeof(arr) / sizeof(arr[0]);
 
     int result = binarySearch(arr, 0, n - 1, x);
 
     (result == -1) ? cout << "Element is not present in array"
-                    : cout << "Element is present at index " << result;
+                   : cout << "Element is present at index " << result;
     return 0;
 }
