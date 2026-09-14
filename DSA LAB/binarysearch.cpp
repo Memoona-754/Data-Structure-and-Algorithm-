@@ -16,7 +16,7 @@ int search(int nums[], int n, int target) {
             r = m - 1;
     }
 
-    return -1;   // not found
+    return -1;  
 }
 
 int main() {
@@ -24,10 +24,10 @@ int main() {
     int n = sizeof(nums) / sizeof(nums[0]);
 
     int target1 = 9;
-    cout << "Search " << target1 << ": " << search(nums, n, target1) << endl;   // expect 4
+    cout << "Search " << target1 << ": " << search(nums, n, target1) << endl;  
 
     int target2 = 2;
-    cout << "Search " << target2 << ": " << search(nums, n, target2) << endl;   // expect -1
+    cout << "Search " << target2 << ": " << search(nums, n, target2) << endl;  
 
     return 0;
 }
