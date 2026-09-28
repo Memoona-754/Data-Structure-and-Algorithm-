@@ -1,12 +1,11 @@
 #include <iostream>
 using namespace std;
 
-// One box of the list: holds a value + two arrows
 class Node {
 public:
     int data;
-    Node* prev;   // arrow to the box before
-    Node* next;   // arrow to the box after
+    Node* prev;  
+    Node* next;  
 
     Node(int value) {
         data = value;
@@ -17,8 +16,8 @@ public:
 
 class Deque {
 private:
-    Node* front;  // first box
-    Node* rear;   // last box
+    Node* front;  
+    Node* rear;   
 
 public:
     Deque() {
@@ -33,11 +32,11 @@ public:
     void insertFront(int value) {
         Node* n = new Node(value);
         if (isEmpty()) {
-            front = rear = n;       // only one box, so it is both front and rear
+            front = rear = n;      
         } else {
-            n->next = front;        // new box points forward to old front
-            front->prev = n;        // old front points back to new box
-            front = n;              // new box is now the front
+            n->next = front;        
+            front->prev = n;        
+            front = n;              
         }
     }
 
@@ -46,9 +45,9 @@ public:
         if (isEmpty()) {
             front = rear = n;
         } else {
-            n->prev = rear;         // new box points back to old rear
-            rear->next = n;         // old rear points forward to new box
-            rear = n;               // new box is now the rear
+            n->prev = rear;         
+            rear->next = n;         
+            rear = n;               
         }
     }
 
@@ -58,11 +57,11 @@ public:
             return;
         }
         Node* temp = front;
-        front = front->next;        // move front one step forward
+        front = front->next;        
         if (front == NULL)
-            rear = NULL;            // list became empty
+            rear = NULL;          
         else
-            front->prev = NULL;     // new front has nothing before it
+            front->prev = NULL;    
         delete temp;
     }
 
@@ -72,11 +71,11 @@ public:
             return;
         }
         Node* temp = rear;
-        rear = rear->prev;          // move rear one step back (easy because of prev!)
+        rear = rear->prev;         
         if (rear == NULL)
-            front = NULL;           // list became empty
+            front = NULL;          
         else
-            rear->next = NULL;      // new rear has nothing after it
+            rear->next = NULL;    
         delete temp;
     }
 
