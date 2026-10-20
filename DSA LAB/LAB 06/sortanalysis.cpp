@@ -10,7 +10,6 @@ using namespace std;
 
 class Sort {
 public:
-    // Result of one sorting run
     struct Stats {
         string name;
         long long comparisons = 0;
@@ -19,7 +18,6 @@ public:
     };
 
 private:
-    // Modified bubble sort: exits early if a pass makes no swaps
     static Stats bubbleSort(vector<int>& a) {
         Stats s;
         s.name = "Bubble";
@@ -38,8 +36,6 @@ private:
         }
         return s;
     }
-
-    // Selection sort: at most one swap per pass
     static Stats selectionSort(vector<int>& a) {
         Stats s;
         s.name = "Selection";
@@ -57,9 +53,6 @@ private:
         }
         return s;
     }
-
-    // Insertion sort: implemented with adjacent swaps so that the
-    // swap count is comparable with the other two techniques
     static Stats insertionSort(vector<int>& a) {
         Stats s;
         s.name = "Insertion";
@@ -86,9 +79,6 @@ private:
     }
 
 public:
-    // Sort 'arr' using the technique named in 'choice'
-    // ("bubble", "selection" or "insertion", case-insensitive).
-    // Throws invalid_argument for an unknown choice.
     Stats sortArray(vector<int>& arr, const string& choice) const {
         string c = toLower(choice);
         if (c == "bubble")    return bubbleSort(arr);
@@ -96,16 +86,11 @@ public:
         if (c == "insertion") return insertionSort(arr);
         throw invalid_argument("Unknown sorting technique: " + choice);
     }
-
-    // Random array of size n with values in [lo, hi]
     static vector<int> randomArray(int n, int lo = 1, int hi = 1000) {
         vector<int> v(n);
         for (int& x : v) x = lo + rand() % (hi - lo + 1);
         return v;
     }
-
-    // Run all three techniques on identical copies of a random array
-    // and return their statistics.
     vector<Stats> analyze(int n) const {
         vector<int> original = randomArray(n);
         vector<Stats> results;
@@ -121,7 +106,6 @@ int main() {
     srand((unsigned)time(nullptr));
     Sort sorter;
 
-    // 1) Sorting with a user-chosen technique
     vector<int> data = {64, 34, 25, 12, 22, 11, 90};
     string choice = "selection";
     sorter.sortArray(data, choice);
@@ -129,7 +113,6 @@ int main() {
     for (int x : data) cout << x << " ";
     cout << "\n\n";
 
-    // 2) Analysis on a randomly generated array
     int n = 100;
     vector<Sort::Stats> results = sorter.analyze(n);
 
@@ -145,8 +128,6 @@ int main() {
              << setw(10) << r.swaps
              << setw(10) << r.total() << "\n";
     }
-
-    // 3) Best and worst (fewest / most comparisons + swaps)
     auto cmp = [](const Sort::Stats& a, const Sort::Stats& b) {
         return a.total() < b.total();
     };
