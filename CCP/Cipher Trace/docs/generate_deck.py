@@ -7,654 +7,699 @@ from pptx.enum.shapes import MSO_SHAPE
 
 def create_deck():
     prs = Presentation()
-    prs.slide_width = Inches(13.333)
+    prs.slide_width  = Inches(13.333)
     prs.slide_height = Inches(7.5)
-    blank_layout = prs.slide_layouts[6]
+    blank = prs.slide_layouts[6]
 
-    # Color Palette (Cyber Dark Theme)
-    BG_COLOR = RGBColor(11, 19, 32)        # Deep Navy #0B1320
-    CARD_BG = RGBColor(24, 38, 56)         # Slate Blue #182638
-    CARD_BORDER = RGBColor(45, 68, 96)     # Muted Border
-    ACCENT_CYAN = RGBColor(0, 210, 255)    # Neon Cyan #00D2FF
-    ACCENT_GREEN = RGBColor(0, 230, 118)   # Emerald #00E676
-    ACCENT_RED = RGBColor(255, 82, 82)     # Alert Red #FF5252
-    TEXT_LIGHT = RGBColor(240, 244, 248)   # Off-white
-    TEXT_MUTED = RGBColor(148, 163, 184)   # Slate gray
-    ACCENT_GOLD = RGBColor(255, 193, 7)    # Gold
+    # ── Colour Palette ──────────────────────────────────────────────────────
+    BG       = RGBColor(11,  19,  32)
+    CARD_BG  = RGBColor(24,  38,  56)
+    CBORDER  = RGBColor(45,  68,  96)
+    CYAN     = RGBColor(0,  210, 255)
+    GREEN    = RGBColor(0,  230, 118)
+    RED      = RGBColor(255, 82,  82)
+    GOLD     = RGBColor(255, 193,  7)
+    PURPLE   = RGBColor(179, 136, 255)
+    WHITE    = RGBColor(240, 244, 248)
+    MUTED    = RGBColor(148, 163, 184)
+    DARKBLUE = RGBColor(0,   60,  80)
 
-    def add_bg(slide):
-        bg = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0, Inches(13.333), Inches(7.5))
-        bg.fill.solid()
-        bg.fill.fore_color.rgb = BG_COLOR
-        bg.line.fill.background()
-        return bg
+    # ── Helpers ─────────────────────────────────────────────────────────────
+    def bg(slide):
+        s = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, 0, 0,
+                                   Inches(13.333), Inches(7.5))
+        s.fill.solid(); s.fill.fore_color.rgb = BG
+        s.line.fill.background()
 
-    def add_header(slide, title_text, category="CIPHERTRACE | 3RD SEMESTER DSA PROJECT"):
-        cat_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.4), Inches(11.7), Inches(0.4))
-        tf_cat = cat_box.text_frame
-        tf_cat.word_wrap = True
-        p_cat = tf_cat.paragraphs[0]
-        p_cat.text = category.upper()
-        p_cat.font.size = Pt(11)
-        p_cat.font.bold = True
-        p_cat.font.color.rgb = ACCENT_CYAN
+    def header(slide, title, sub="CIPHERTRACE  |  CS-201  |  3RD SEMESTER DSA PROJECT"):
+        t = slide.shapes.add_textbox(Inches(0.8), Inches(0.28), Inches(11.7), Inches(0.3))
+        p = t.text_frame.paragraphs[0]
+        p.text = sub; p.font.size = Pt(9); p.font.bold = True
+        p.font.color.rgb = CYAN
 
-        title_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.7), Inches(11.7), Inches(0.8))
-        tf_title = title_box.text_frame
-        tf_title.word_wrap = True
-        p_title = tf_title.paragraphs[0]
-        p_title.text = title_text
-        p_title.font.size = Pt(24)
-        p_title.font.bold = True
-        p_title.font.color.rgb = TEXT_LIGHT
+        sep = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
+                                     Inches(0.8), Inches(0.62),
+                                     Inches(11.7), Inches(0.03))
+        sep.fill.solid(); sep.fill.fore_color.rgb = CYAN
+        sep.line.fill.background()
 
-    def add_card(slide, left, top, width, height, title="", border_color=CARD_BORDER):
-        card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, top, width, height)
-        card.fill.solid()
-        card.fill.fore_color.rgb = CARD_BG
-        card.line.color.rgb = border_color
-        card.line.width = Pt(1.5)
-        
+        t2 = slide.shapes.add_textbox(Inches(0.8), Inches(0.68), Inches(11.7), Inches(0.75))
+        p2 = t2.text_frame.paragraphs[0]
+        p2.text = title; p2.font.size = Pt(24)
+        p2.font.bold = True; p2.font.color.rgb = WHITE
+
+    def card(slide, lx, ty, w, h, title="", bcol=None):
+        bcol = bcol or CBORDER
+        s = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, lx, ty, w, h)
+        s.fill.solid(); s.fill.fore_color.rgb = CARD_BG
+        s.line.color.rgb = bcol; s.line.width = Pt(2)
         if title:
-            tb = slide.shapes.add_textbox(left + Inches(0.2), top + Inches(0.15), width - Inches(0.4), Inches(0.5))
-            tf = tb.text_frame
-            tf.word_wrap = True
-            p = tf.paragraphs[0]
-            p.text = title
-            p.font.size = Pt(14)
-            p.font.bold = True
-            p.font.color.rgb = ACCENT_CYAN
-        return card
+            tb = slide.shapes.add_textbox(lx+Inches(0.2), ty+Inches(0.12),
+                                          w-Inches(0.4), Inches(0.4))
+            p = tb.text_frame.paragraphs[0]
+            p.text = title; p.font.size = Pt(13)
+            p.font.bold = True; p.font.color.rgb = bcol
+        return s
+
+    def txt(slide, lx, ty, w, h, text, size=12, color=None, bold=False,
+            wrap=True, align=PP_ALIGN.LEFT):
+        color = color or MUTED
+        tb = slide.shapes.add_textbox(lx, ty, w, h)
+        tb.text_frame.word_wrap = wrap
+        p = tb.text_frame.paragraphs[0]
+        p.text = text; p.font.size = Pt(size)
+        p.font.bold = bold; p.font.color.rgb = color
+        p.alignment = align
+        return tb
+
+    def bullets(slide, lx, ty, w, items):
+        """items = list of (text, color) tuples"""
+        tb = slide.shapes.add_textbox(lx, ty, w, Inches(4.5))
+        tb.text_frame.word_wrap = True
+        for i, (t, c) in enumerate(items):
+            p = tb.text_frame.paragraphs[0] if i == 0 else tb.text_frame.add_paragraph()
+            p.text = t; p.font.size = Pt(12)
+            p.font.color.rgb = c; p.space_after = Pt(5)
+
+    def flow_box(slide, lx, ty, w, h, line1, line2="", bcol=CYAN, fill=None):
+        fill = fill or CARD_BG
+        s = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, lx, ty, w, h)
+        s.fill.solid(); s.fill.fore_color.rgb = fill
+        s.line.color.rgb = bcol; s.line.width = Pt(2)
+        tb = slide.shapes.add_textbox(lx+Inches(0.1), ty+Inches(0.05),
+                                       w-Inches(0.2), h-Inches(0.1))
+        tb.text_frame.word_wrap = True
+        p1 = tb.text_frame.paragraphs[0]
+        p1.text = line1; p1.font.size = Pt(11)
+        p1.font.bold = True; p1.font.color.rgb = bcol
+        p1.alignment = PP_ALIGN.CENTER
+        if line2:
+            p2 = tb.text_frame.add_paragraph()
+            p2.text = line2; p2.font.size = Pt(9)
+            p2.font.color.rgb = MUTED; p2.alignment = PP_ALIGN.CENTER
+
+    def arrow_down(slide, cx, ty, h):
+        # stem
+        s = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
+                                   cx-Inches(0.04), ty, Inches(0.08), h-Inches(0.14))
+        s.fill.solid(); s.fill.fore_color.rgb = CYAN; s.line.fill.background()
+        # arrowhead triangle
+        t = slide.shapes.add_shape(MSO_SHAPE.ISOSCELES_TRIANGLE,
+                                   cx-Inches(0.12), ty+h-Inches(0.17),
+                                   Inches(0.24), Inches(0.17))
+        t.fill.solid(); t.fill.fore_color.rgb = CYAN; t.line.fill.background()
 
     # =========================================================================
-    # SLIDE 1: TITLE SLIDE
+    # SLIDE 1 — TITLE + TEAM
     # =========================================================================
-    s1 = prs.slides.add_slide(blank_layout)
-    add_bg(s1)
+    s1 = prs.slides.add_slide(blank); bg(s1)
 
-    # Accent badge
-    badge = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(1.0), Inches(1.5), Inches(4.5), Inches(0.45))
-    badge.fill.solid()
-    badge.fill.fore_color.rgb = CARD_BG
-    badge.line.color.rgb = ACCENT_CYAN
-    tf_b = badge.text_frame
-    p_b = tf_b.paragraphs[0]
-    p_b.text = "DATA STRUCTURES & ALGORITHMS • SEMESTER PROJECT"
-    p_b.font.size = Pt(10)
-    p_b.font.bold = True
-    p_b.font.color.rgb = ACCENT_CYAN
-    p_b.alignment = PP_ALIGN.CENTER
+    # Top badge
+    b = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                            Inches(0.8), Inches(0.3), Inches(6.5), Inches(0.4))
+    b.fill.solid(); b.fill.fore_color.rgb = DARKBLUE
+    b.line.color.rgb = CYAN; b.line.width = Pt(1)
+    p = b.text_frame.paragraphs[0]
+    p.text = "DATA STRUCTURES & ALGORITHMS  •  CS-201  •  3RD SEMESTER"
+    p.font.size = Pt(9); p.font.bold = True
+    p.font.color.rgb = CYAN; p.alignment = PP_ALIGN.CENTER
 
-    tb_t = s1.shapes.add_textbox(Inches(1.0), Inches(2.2), Inches(11.0), Inches(1.8))
-    p_t = tb_t.text_frame.paragraphs[0]
-    p_t.text = "CipherTrace"
-    p_t.font.size = Pt(54)
-    p_t.font.bold = True
-    p_t.font.color.rgb = TEXT_LIGHT
+    txt(s1, Inches(0.8), Inches(1.0), Inches(12.0), Inches(1.5),
+        "CipherTrace", size=58, color=WHITE, bold=True)
 
-    tb_sub = s1.shapes.add_textbox(Inches(1.0), Inches(3.6), Inches(10.5), Inches(1.0))
-    p_sub = tb_sub.text_frame.paragraphs[0]
-    p_sub.text = "An Explainable Digital Forensics & Scam Detection Engine\nPowered by Custom Data Structures & Dynamic Programming"
-    p_sub.font.size = Pt(20)
-    p_sub.font.color.rgb = ACCENT_CYAN
+    line = s1.shapes.add_shape(MSO_SHAPE.RECTANGLE,
+                               Inches(0.8), Inches(2.3), Inches(5.5), Inches(0.055))
+    line.fill.solid(); line.fill.fore_color.rgb = CYAN; line.line.fill.background()
 
-    # Meta card
-    meta = add_card(s1, Inches(1.0), Inches(5.0), Inches(11.3), Inches(1.5))
-    tb_m = s1.shapes.add_textbox(Inches(1.2), Inches(5.15), Inches(11.0), Inches(1.2))
-    tf_m = tb_m.text_frame
-    p_m1 = tf_m.paragraphs[0]
-    p_m1.text = "Evaluation Level: 3rd-Semester Academic Defense • Subject: Data Structures & Algorithms (CS-201)"
-    p_m1.font.size = Pt(13)
-    p_m1.font.bold = True
-    p_m1.font.color.rgb = TEXT_LIGHT
+    txt(s1, Inches(0.8), Inches(2.4), Inches(11.5), Inches(0.55),
+        "An Explainable Digital Forensics & Scam Detection Engine",
+        size=20, color=CYAN)
 
-    p_m2 = tf_m.add_paragraph()
-    p_m2.text = "Implementation: 100% Custom Non-STL Templates (Stack, Queue, DoublyList, CircularBuffer, Heap, Graph) + Qt 6 GUI"
-    p_m2.font.size = Pt(12)
-    p_m2.font.color.rgb = TEXT_MUTED
+    txt(s1, Inches(0.8), Inches(3.05), Inches(8.8), Inches(1.3),
+        "CipherTrace is a Pakistan-focused cybersecurity engine built in C++17 with a "
+        "Qt 6 GUI. It analyzes suspicious SMS, WhatsApp, and email messages using "
+        "10 custom Data Structures & Algorithms — producing a fully explainable "
+        "forensic verdict with zero cloud dependency and 100% offline privacy.",
+        size=13, color=MUTED, wrap=True)
 
-    # Notes
+    # Team label
+    txt(s1, Inches(0.8), Inches(4.45), Inches(4.0), Inches(0.35),
+        "PROJECT TEAM", size=11, color=GOLD, bold=True)
+
+    members = [
+        ("Memoona Mehboob", "CT-166", CYAN),
+        ("Marium Faheem",   "CT-168", GREEN),
+        ("Maryum Mairaj",   "CT-170", GOLD),
+    ]
+    for i, (name, roll, col) in enumerate(members):
+        mx = Inches(0.8 + i * 4.1)
+        my = Inches(4.85)
+        c = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, mx, my,
+                                Inches(3.8), Inches(1.45))
+        c.fill.solid(); c.fill.fore_color.rgb = CARD_BG
+        c.line.color.rgb = col; c.line.width = Pt(2.5)
+        tb = s1.shapes.add_textbox(mx+Inches(0.22), my+Inches(0.18),
+                                   Inches(3.4), Inches(1.1))
+        tf = tb.text_frame
+        p1 = tf.paragraphs[0]
+        p1.text = name; p1.font.size = Pt(15)
+        p1.font.bold = True; p1.font.color.rgb = col
+        p2 = tf.add_paragraph()
+        p2.text = roll; p2.font.size = Pt(13); p2.font.color.rgb = MUTED
+
     s1.notes_slide.notes_text_frame.text = (
-        "Good morning respected professors and evaluators. Today we present CipherTrace: an explainable digital "
-        "forensics engine engineered to deconstruct and score suspicious communications using custom-built data structures."
+        "Good morning respected professors. We are presenting CipherTrace. "
+        "Team: Memoona CT-166, Marium Faheem CT-168, Maryum Mairaj CT-170."
     )
 
     # =========================================================================
-    # SLIDE 2: PROBLEM STATEMENT & MOTIVATION
+    # SLIDE 2 — SYSTEM FLOWCHART
     # =========================================================================
-    s2 = prs.slides.add_slide(blank_layout)
-    add_bg(s2)
-    add_header(s2, "Problem Statement: The Explainability Crisis in Cybersecurity")
+    s2 = prs.slides.add_slide(blank); bg(s2)
+    header(s2, "Complete System Architecture — Data Flow & Header Files")
 
-    c1 = add_card(s2, Inches(0.8), Inches(1.8), Inches(3.6), Inches(4.8), "1. The Smishing Epidemic")
-    tb = s2.shapes.add_textbox(Inches(1.0), Inches(2.5), Inches(3.2), Inches(3.8))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Over 3.4 billion phishing & smishing messages transmitted globally each day."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "• Localized threats target millions via Easypaisa, JazzCash, BISP, and fake banking OTP suspension lures."
-    p.font.size = Pt(13)
-    p.font.color.rgb = TEXT_MUTED
-    p2 = tf.add_paragraph()
-    p2.text = "• Attackers exploit psychological urgency, financial lures, and evasive leetspeak substitutions."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_MUTED
+    # ── LEFT: Main processing pipeline ──
+    PW   = Inches(5.6)   # pipeline box width
+    PH   = Inches(0.57)  # pipeline box height
+    PCX  = Inches(3.85)  # center x
+    PL   = PCX - PW/2    # left edge
 
-    c2 = add_card(s2, Inches(4.8), Inches(1.8), Inches(3.6), Inches(4.8), "2. The 'Black-Box' Flaw", ACCENT_RED)
-    tb = s2.shapes.add_textbox(Inches(5.0), Inches(2.5), Inches(3.2), Inches(3.8))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Modern AI / ML classifiers output opaque probabilities (e.g. '92% Scam') without justification."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "• In digital forensics, law enforcement, and financial audits, unexplainable decisions are legally inadmissible."
-    p.font.size = Pt(13)
-    p.font.color.rgb = TEXT_MUTED
-    p2 = tf.add_paragraph()
-    p2.text = "• Black-box systems are easily deceived by zero-day evasion techniques and subdomain masking."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_MUTED
+    BOX_Y = [1.60, 2.37, 3.14, 4.03, 4.95, 5.72]  # inch y-positions
 
-    c3 = add_card(s2, Inches(8.8), Inches(1.8), Inches(3.7), Inches(4.8), "3. The CipherTrace Thesis", ACCENT_GREEN)
-    tb = s2.shapes.add_textbox(Inches(9.0), Inches(2.5), Inches(3.3), Inches(3.8))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Foundational Data Structures provide the ideal architecture for auditable, transparent security."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_LIGHT
-    p = tf.add_paragraph()
-    p.text = "• Every verdict is backed by an auditable, chronological docket of cryptographic & pattern evidence."
-    p.font.size = Pt(13)
-    p.font.color.rgb = ACCENT_CYAN
-    p2 = tf.add_paragraph()
-    p2.text = "• Achieves deterministic microsecond execution without requiring heavy GPU or neural-net overhead."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_LIGHT
+    flow_box(s2, PL, Inches(BOX_Y[0]), PW, PH,
+             "📩  INPUT MESSAGE",
+             "Raw SMS / WhatsApp / Email / URL",
+             GOLD, RGBColor(40, 28, 8))
+    arrow_down(s2, PCX, Inches(BOX_Y[0]+0.57), Inches(0.24))
+
+    flow_box(s2, PL, Inches(BOX_Y[1]), PW, PH,
+             "Normalizer.h  —  Leetspeak Decoder",
+             "3→e  0→o  1→i  @→a  |  Protects phone numbers & URLs from decoding",
+             CYAN)
+    arrow_down(s2, PCX, Inches(BOX_Y[1]+0.57), Inches(0.21))
+
+    flow_box(s2, PL, Inches(BOX_Y[2]), PW, PH,
+             "Tokenizer.h  —  Typed Token Extraction",
+             "Splits message →  WORD tokens  |  URL tokens  |  PHONE tokens",
+             CYAN)
+    arrow_down(s2, PCX, Inches(BOX_Y[2]+0.57), Inches(0.3))
+
+    # 3 detector boxes side by side
+    DW = Inches(1.73); DH = Inches(0.76); DY = Inches(BOX_Y[3])
+    dets = [
+        ("KeywordDetector.h", "Binary Search\non RuleBook.h", GREEN),
+        ("UrlDetector.h",     "Stack.h Domain\n+ Levenshtein.h DP", RED),
+        ("PatternDetector.h", "CAPS Ratio\nPhone Lure\n!!! Spam", PURPLE),
+    ]
+    for i, (dn, ds, dc) in enumerate(dets):
+        flow_box(s2, PL + i*(DW+Inches(0.07)), DY, DW, DH, dn, ds, dc)
+    arrow_down(s2, PCX, Inches(BOX_Y[3]+0.76), Inches(0.16))
+
+    flow_box(s2, PL, Inches(BOX_Y[4]), PW, PH,
+             "Scorer.h  —  Weighted Evidence Scoring",
+             "Weight sum  +  Phishing Triad Combo Penalty +25 pts  →  Verdict thresholds",
+             GREEN)
+    arrow_down(s2, PCX, Inches(BOX_Y[4]+0.57), Inches(0.20))
+
+    flow_box(s2, PL, Inches(BOX_Y[5]), PW, PH,
+             "🎯  FINAL VERDICT  &  FORENSIC REPORT",
+             "CRITICAL SCAM (≥80)  |  SUSPICIOUS (≥60)  |  SAFE VERIFIED (<40)",
+             GOLD, RGBColor(40, 28, 8))
+
+    # ── RIGHT: Supporting DSA modules ──
+    RX = Inches(7.75); RW = Inches(5.25)
+    txt(s2, RX, Inches(1.52), RW, Inches(0.35),
+        "SUPPORTING DATA STRUCTURES", size=11, color=GOLD, bold=True)
+
+    right = [
+        ("MaxHeap.h",               "Top-K Priority Evidence Extraction  |  O(K log N)",         CYAN),
+        ("ThreatGraph.h + Queue.h", "Adjacency List Graph + BFS Syndicate Cluster  |  O(V+E)",   RED),
+        ("Sorting.h",               "MergeSort / QuickSort / BubbleSort  |  Algorithm Lab",       GREEN),
+        ("DoublyList.h",            "Bidirectional Audit Trail  |  O(1) Back/Next navigation",    PURPLE),
+        ("CircularBuffer.h",        "Rolling Ring Buffer — last 5 scans  |  O(1) push/overwrite", GOLD),
+        ("RuleBook.h + Rule.h",     "Insertion Sort at load + Binary Search at scan  |  O(log N)",CYAN),
+    ]
+    for i, (rn, rd, rc) in enumerate(right):
+        ry = Inches(1.92 + i * 0.87)
+        s = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, RX, ry, RW, Inches(0.74))
+        s.fill.solid(); s.fill.fore_color.rgb = CARD_BG
+        s.line.color.rgb = rc; s.line.width = Pt(1.5)
+        tb = s2.shapes.add_textbox(RX+Inches(0.15), ry+Inches(0.07),
+                                   RW-Inches(0.3), Inches(0.63))
+        tf = tb.text_frame; tf.word_wrap = True
+        p1 = tf.paragraphs[0]
+        p1.text = rn; p1.font.size = Pt(12)
+        p1.font.bold = True; p1.font.color.rgb = rc
+        p2 = tf.add_paragraph()
+        p2.text = rd; p2.font.size = Pt(10); p2.font.color.rgb = MUTED
 
     s2.notes_slide.notes_text_frame.text = (
-        "Here we establish our core motivation: machine learning models cannot tell an investigator *why* a message "
-        "was blocked. CipherTrace acts like a forensic detective, producing a court-admissible evidence case file."
+        "This flowchart shows the complete data flow. Left = main scan pipeline. "
+        "Right = supporting DSA modules used throughout the system. "
+        "Every box maps to a specific header file."
     )
 
     # =========================================================================
-    # SLIDE 3: 6-STAGE FORENSIC PIPELINE
+    # SLIDE 3 — PROBLEM STATEMENT
     # =========================================================================
-    s3 = prs.slides.add_slide(blank_layout)
-    add_bg(s3)
-    add_header(s3, "Architecture: The 6-Stage Forensic Pipeline")
+    s3 = prs.slides.add_slide(blank); bg(s3)
+    header(s3, "Problem Statement: Why CipherTrace Was Needed")
+
+    cols3 = [
+        ("1. The Smishing Epidemic",
+         [("• 3.4 billion phishing messages sent globally every day.", MUTED),
+          ("• Pakistani users targeted via Easypaisa, JazzCash & BISP lottery scams.", MUTED),
+          ("• Attackers use leet-speak (3asypais4) to bypass basic keyword filters.", MUTED),
+          ("• Existing tools: English-only, cloud-dependent, unexplainable.", RED)],
+         Inches(0.8), CBORDER),
+        ("2. The Black-Box AI Flaw",
+         [("• ML classifiers output '92% Scam' — zero forensic justification.", MUTED),
+          ("• In law enforcement, unexplained AI decisions are legally inadmissible.", MUTED),
+          ("• Zero-day evasion defeats models not updated in real-time.", MUTED),
+          ("• Privacy risk: sensitive messages sent to remote AI servers.", RED)],
+         Inches(4.75), RED),
+        ("3. CipherTrace Thesis",
+         [("• Every verdict backed by an auditable evidence docket.", WHITE),
+          ("• 100% offline — no cloud, no AI, no data leaving the device.", GREEN),
+          ("• Pure C++ DSA logic: deterministic microsecond execution.", WHITE),
+          ("• Pakistan-specific: Easypaisa, JazzCash, BISP brands built-in.", GREEN)],
+         Inches(8.70), GREEN),
+    ]
+    for title, pts, lx, bc in cols3:
+        card(s3, lx, Inches(1.78), Inches(3.65), Inches(5.1), title, bc)
+        tb = s3.shapes.add_textbox(lx+Inches(0.2), Inches(2.45),
+                                   Inches(3.3), Inches(4.2))
+        tf = tb.text_frame; tf.word_wrap = True
+        for i, (t, c) in enumerate(pts):
+            p = tf.paragraphs[0] if i == 0 else tf.add_paragraph()
+            p.text = t; p.font.size = Pt(12.5)
+            p.font.color.rgb = c; p.space_after = Pt(6)
+
+    # =========================================================================
+    # SLIDE 4 — 6-STAGE PIPELINE + HEADER FILES
+    # =========================================================================
+    s4 = prs.slides.add_slide(blank); bg(s4)
+    header(s4, "Architecture: 6-Stage Forensic Pipeline & Exact Header Files")
 
     stages = [
-        ("Stage 1: Normalizer", "Decodes evasive leetspeak (fr33 ➔ free) & compresses repetitive punctuation.", ACCENT_CYAN),
-        ("Stage 2: Tokenizer", "Separates stream into typed tokens: Clean Words, URLs, & Contact Numbers.", ACCENT_CYAN),
-        ("Stage 3: Detectors", "Polymorphic battery (RuleBook Binary Search, Domain Stack, Pattern Analysis).", ACCENT_CYAN),
-        ("Stage 4: Evidence Stack", "Custom Stack<Evidence> stores all red flags in reverse chronological docket.", ACCENT_GOLD),
-        ("Stage 5: Scorer & Heap", "Weighted scoring, +25 Phishing Triad Combo penalty, & Max-Heap Top-3 threats.", ACCENT_GREEN),
-        ("Stage 6: Threat Graph", "Graph Adjacency List + BFS unmasks multi-message organized scam syndicates.", ACCENT_RED),
+        ("Stage 1", "Normalizer.h",       "Leetspeak decode (3→e, 0→o)\nURL & phone number guard\nPunctuation compression",         CYAN),
+        ("Stage 2", "Tokenizer.h",        "WORD token extraction\nURL token extraction\nPHONE_NUMBER token extraction",              CYAN),
+        ("Stage 3", "KeywordDetector.h",  "Binary Search on RuleBook.h\n20 keywords, O(log N) lookup\nCategory + weight per match",   GREEN),
+        ("Stage 4", "UrlDetector.h",      "Stack.h domain reversal\nLevenshtein.h typosquat DP\nHigh-risk TLD detection (.xyz .top)", RED),
+        ("Stage 5", "PatternDetector.h",  "ALL-CAPS ratio check\nExclamation spam detector\nPhone-number lure pattern",              PURPLE),
+        ("Stage 6", "Scorer.h",           "Weighted score aggregation\nPhishing Triad Combo +25 pts\nVerdict: SCAM / SUSPICIOUS / SAFE", GOLD),
     ]
+    for idx, (stage, hfile, desc, col) in enumerate(stages):
+        r = idx // 3; c = idx % 3
+        lx = Inches(0.8 + c * 4.0); ty = Inches(1.72 + r * 2.72)
 
-    for idx, (st_title, st_desc, color) in enumerate(stages):
-        row = idx // 3
-        col = idx % 3
-        l = Inches(0.8 + col * 4.0)
-        t = Inches(1.8 + row * 2.6)
-        card = add_card(s3, l, t, Inches(3.7), Inches(2.2), st_title, color)
-        tb = s3.shapes.add_textbox(l + Inches(0.2), t + Inches(0.7), Inches(3.3), Inches(1.3))
-        tf = tb.text_frame
-        tf.word_wrap = True
-        tf.paragraphs[0].text = st_desc
-        tf.paragraphs[0].font.size = Pt(12)
-        tf.paragraphs[0].font.color.rgb = TEXT_MUTED
+        bx = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                  lx, ty, Inches(3.75), Inches(2.52))
+        bx.fill.solid(); bx.fill.fore_color.rgb = CARD_BG
+        bx.line.color.rgb = col; bx.line.width = Pt(2)
 
-    s3.notes_slide.notes_text_frame.text = (
-        "Notice the complete separation of concerns: each stage is an isolated class. The core engine knows "
-        "nothing about Qt GUI, meaning it can be compiled into a headless server, embedded device, or desktop app."
-    )
+        # Stage badge
+        badge = s4.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                    lx+Inches(0.18), ty+Inches(0.14),
+                                    Inches(0.9), Inches(0.3))
+        badge.fill.solid(); badge.fill.fore_color.rgb = col
+        badge.line.fill.background()
+        p = badge.text_frame.paragraphs[0]
+        p.text = stage; p.font.size = Pt(9)
+        p.font.bold = True; p.font.color.rgb = BG
+        p.alignment = PP_ALIGN.CENTER
+
+        # Header filename
+        tb_h = s4.shapes.add_textbox(lx+Inches(1.18), ty+Inches(0.1),
+                                     Inches(2.4), Inches(0.42))
+        p_h = tb_h.text_frame.paragraphs[0]
+        p_h.text = hfile; p_h.font.size = Pt(13)
+        p_h.font.bold = True; p_h.font.color.rgb = col
+
+        # Description
+        tb_d = s4.shapes.add_textbox(lx+Inches(0.2), ty+Inches(0.58),
+                                     Inches(3.35), Inches(1.8))
+        tf_d = tb_d.text_frame; tf_d.word_wrap = True
+        p_d = tf_d.paragraphs[0]
+        p_d.text = desc; p_d.font.size = Pt(12); p_d.font.color.rgb = MUTED
 
     # =========================================================================
-    # SLIDE 4: THE MASTER DSA MATRIX
+    # SLIDE 5 — MASTER DSA MATRIX
     # =========================================================================
-    s4 = prs.slides.add_slide(blank_layout)
-    add_bg(s4)
-    add_header(s4, "The Master DSA Matrix: Where & Why Structures Are Used")
+    s5 = prs.slides.add_slide(blank); bg(s5)
+    header(s5, "Master DSA Matrix — Header File → Role → Complexity")
 
-    rows = [
-        ("Singly Linked List", "Stack & Queue Backbone", "Dynamic allocation, zero resizing overhead", "O(1) push/pop"),
-        ("Stack (LIFO)", "Evidence Docket & Domain Parser", "Chronological report + Reverse domain label split", "O(1) / O(L)"),
-        ("Queue (FIFO)", "Batch Ingestion & BFS Queue", "First-come fair triage + Graph Breadth-First Search", "O(1) enqueue"),
-        ("Doubly Linked List", "Forensic Audit Trail", "Bidirectional O(1) Back/Next past scan navigation", "O(1) move"),
-        ("Circular Ring Buffer", "Recent Scans Monitor", "Fixed memory telemetry; overwrites oldest entries", "O(1) push"),
-        ("Binary Max-Heap", "Top-K Priority Threats", "Extracts 3 worst clues without full O(N log N) sort", "O(K log N)"),
-        ("Dynamic Programming", "Levenshtein Typosquatting", "Catches homograph domain spoofing (paypa1.com)", "O(M * N)"),
-        ("Graph (Adjacency List)", "Syndicate Network Analysis", "Vertices = Phones/URLs, Edges = Shared messages", "O(V + E)"),
-        ("Sorting Suite", "Severity Sorter & Algo Lab", "MergeSort, QuickSort, BubbleSort comparisons", "O(N log N)"),
+    rows5 = [
+        ("Stack.h",          "Evidence Docket & URL Reversal",   "LIFO linked list — O(1) push/pop, reverses URL domain labels",   "O(1) / O(L)"),
+        ("Queue.h",          "BFS in ThreatGraph.h",             "FIFO linked list — powers Breadth-First Search traversal",       "O(1) enq/deq"),
+        ("DoublyList.h",     "Forensic Audit Trail",             "Bidirectional prev/next cursor — O(1) Back/Next navigation",    "O(1) move"),
+        ("CircularBuffer.h", "Rolling Telemetry Monitor",        "Modulo-wrap ring buffer — bounded O(1) push, no realloc",       "O(1) push"),
+        ("MaxHeap.h",        "Top-K Priority Evidence",          "Array binary heap heapifyUp/Down — K extractions in O(K log N)","O(K log N)"),
+        ("ThreatGraph.h",    "Scam Syndicate Network",           "Adjacency list Graph + BFS connected components",               "O(V + E)"),
+        ("Levenshtein.h",    "Typosquatting DP",                 "2D DP matrix — catches paypa1.com vs paypal.com (dist=1)",      "O(M × N)"),
+        ("Sorting.h",        "Severity Sorter & Algo Lab",       "MergeSort stable + QuickSort in-place + BubbleSort baseline",   "O(N log N)"),
+        ("RuleBook.h",       "Keyword Database",                 "Insertion Sort at load, Binary Search at scan — O(log N)",      "O(log N)"),
     ]
+    tbl = s5.shapes.add_table(len(rows5)+1, 4,
+                               Inches(0.8), Inches(1.60),
+                               Inches(11.7), Inches(5.6))
+    t = tbl.table
+    t.columns[0].width = Inches(2.1)
+    t.columns[1].width = Inches(2.7)
+    t.columns[2].width = Inches(4.75)
+    t.columns[3].width = Inches(2.15)
 
-    table_shape = s4.shapes.add_table(len(rows) + 1, 4, Inches(0.8), Inches(1.7), Inches(11.7), Inches(5.1))
-    table = table_shape.table
-    table.columns[0].width = Inches(2.2)
-    table.columns[1].width = Inches(2.7)
-    table.columns[2].width = Inches(4.8)
-    table.columns[3].width = Inches(2.0)
-
-    headers = ["Data Structure", "Engine Component", "Engineering Justification", "Time Complexity"]
-    for i, h in enumerate(headers):
-        cell = table.cell(0, i)
-        cell.fill.solid()
-        cell.fill.fore_color.rgb = CARD_BG
+    for i, h in enumerate(["Header File", "Engine Role", "DSA Justification", "Complexity"]):
+        cell = t.cell(0, i)
+        cell.fill.solid(); cell.fill.fore_color.rgb = DARKBLUE
         p = cell.text_frame.paragraphs[0]
-        p.text = h
-        p.font.bold = True
-        p.font.size = Pt(12)
-        p.font.color.rgb = ACCENT_CYAN
+        p.text = h; p.font.bold = True
+        p.font.size = Pt(12); p.font.color.rgb = CYAN
 
-    for r_idx, r_data in enumerate(rows):
-        for c_idx, val in enumerate(r_data):
-            cell = table.cell(r_idx + 1, c_idx)
+    for ri, row in enumerate(rows5):
+        for ci, val in enumerate(row):
+            cell = t.cell(ri+1, ci)
             cell.fill.solid()
-            cell.fill.fore_color.rgb = RGBColor(18, 28, 42) if r_idx % 2 == 0 else RGBColor(14, 22, 34)
+            cell.fill.fore_color.rgb = (RGBColor(18,28,42)
+                                        if ri % 2 == 0 else RGBColor(14,22,34))
             p = cell.text_frame.paragraphs[0]
-            p.text = val
-            p.font.size = Pt(10.5)
-            p.font.color.rgb = TEXT_LIGHT if c_idx == 0 else (ACCENT_GREEN if c_idx == 3 else TEXT_MUTED)
-
-    s4.notes_slide.notes_text_frame.text = (
-        "This is the most critical slide in our evaluation. It directly proves that zero structures were 'bolted on'. "
-        "Every single structure fulfills an asymptotic requirement in the cybersecurity domain."
-    )
-
-    # =========================================================================
-    # SLIDE 5: DEEP DIVE - STACK & DOMAIN PARSER
-    # =========================================================================
-    s5 = prs.slides.add_slide(blank_layout)
-    add_bg(s5)
-    add_header(s5, "Deep Dive: Custom Stack<T> & Reverse Domain Resolution")
-
-    c1 = add_card(s5, Inches(0.8), Inches(1.8), Inches(5.6), Inches(5.0), "Role 1: The Evidence Docket (LIFO)")
-    tb = s5.shapes.add_textbox(Inches(1.0), Inches(2.5), Inches(5.2), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Detection modules execute in real-time and push findings onto Stack<Evidence>."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "• Popping items at analysis conclusion guarantees latest discovered anomalies appear first in the forensic docket."
-    p.font.size = Pt(13)
-    p.font.color.rgb = TEXT_MUTED
-    p2 = tf.add_paragraph()
-    p2.text = "• Guarantees O(1) push and pop operations with zero dynamic array reallocation penalties."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_LIGHT
-
-    c2 = add_card(s5, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.0), "Role 2: Defeating Subdomain Spoofing", ACCENT_GOLD)
-    tb = s5.shapes.add_textbox(Inches(7.0), Inches(2.5), Inches(5.3), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• The Attack: http://login.easypaisa.com.secure-update.xyz\n  Attackers place authentic brand names in subdomains to fool users."
-    tf.paragraphs[0].font.size = Pt(12)
-    tf.paragraphs[0].font.color.rgb = ACCENT_RED
-    p = tf.add_paragraph()
-    p.text = "\n• The Stack Solution:\n  1. Split host on dot ('.') into tokens: ['login', 'easypaisa', 'com', 'secure-update', 'xyz']\n  2. Push all labels onto Stack<string>.\n  3. Pop 1 ➔ TLD = 'xyz'\n  4. Pop 2 ➔ SLD = 'secure-update'\n  5. Registrable Domain = 'secure-update.xyz'"
-    p.font.size = Pt(12)
-    p.font.color.rgb = TEXT_LIGHT
-    p2 = tf.add_paragraph()
-    p2.text = "\n• Forensic Finding: Real domain is NOT easypaisa.com! Flagged as Critical Impersonation (+35 pts)."
-    p2.font.size = Pt(12)
-    p2.font.color.rgb = ACCENT_GREEN
-
-    s5.notes_slide.notes_text_frame.text = (
-        "Examiners love asking: 'Where did you use a stack besides undo/redo?'. Our second application is the "
-        "reverse domain parser. The true domain of a URL is at the very end, so a Stack naturally reverses it in O(L) time."
-    )
+            p.text = val; p.font.size = Pt(10.5)
+            if ci == 0:
+                p.font.bold = True; p.font.color.rgb = CYAN
+            elif ci == 3:
+                p.font.color.rgb = GREEN
+            else:
+                p.font.color.rgb = MUTED
 
     # =========================================================================
-    # SLIDE 6: DEEP DIVE - DYNAMIC PROGRAMMING
+    # SLIDE 6 — STACK.H DEEP DIVE
     # =========================================================================
-    s6 = prs.slides.add_slide(blank_layout)
-    add_bg(s6)
-    add_header(s6, "Deep Dive: Dynamic Programming (Levenshtein Matrix)")
+    s6 = prs.slides.add_slide(blank); bg(s6)
+    header(s6, "Deep Dive: Stack.h — Evidence LIFO Docket & URL Domain Reversal")
 
-    c1 = add_card(s6, Inches(0.8), Inches(1.8), Inches(6.0), Inches(5.0), "The Typosquatting / Homograph Threat")
-    tb = s6.shapes.add_textbox(Inches(1.0), Inches(2.5), Inches(5.6), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Attackers register look-alike domains to deceive visual inspection:"
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "   - paypa1.com vs paypal.com   (1 edit: '1' -> 'l')\n   - easypa1sa.pk vs easypaisa.pk (1 edit: '1' -> 'i')\n   - jazcash.com vs jazzcash.com  (1 edit: missing 'z')"
-    p.font.size = Pt(13)
-    p.font.color.rgb = ACCENT_CYAN
-    p2 = tf.add_paragraph()
-    p2.text = "\n• Traditional dictionary lookups fail because the string does not match any exact blacklisted token."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_MUTED
+    card(s6, Inches(0.8), Inches(1.72), Inches(5.65), Inches(5.1),
+         "Stack.h — Role 1: Evidence LIFO Docket")
+    bullets(s6, Inches(1.0), Inches(2.42), Inches(5.25), [
+        ("• Template class: Node* head, int count", MUTED),
+        ("• push() — adds Evidence node at top — O(1)", MUTED),
+        ("• pop()  — removes from top (latest first) — O(1)", MUTED),
+        ("• Rule of Three: copy ctor = delete; op= = delete", GOLD),
+        ("  Prevents double-free heap corruption", GOLD),
+        ("• Destructor traverses full chain → deletes every node", GREEN),
+        ("• Zero memory leaks — Valgrind/ASan verified clean", GREEN),
+    ])
 
-    c2 = add_card(s6, Inches(7.2), Inches(1.8), Inches(5.3), Inches(5.0), "2D DP Recurrence Relation", ACCENT_GREEN)
-    tb = s6.shapes.add_textbox(Inches(7.4), Inches(2.5), Inches(4.9), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Computes optimal edit distance in O(M × N) time & space:"
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_LIGHT
-    p = tf.add_paragraph()
-    p.text = "dp[i][j] = min(\n    dp[i-1][j] + 1,       // Deletion\n    dp[i][j-1] + 1,       // Insertion\n    dp[i-1][j-1] + cost   // Substitution\n)"
-    p.font.size = Pt(13)
-    p.font.color.rgb = ACCENT_GOLD
-    p2 = tf.add_paragraph()
-    p2.text = "\n• If 0 < distance <= 2 from a recognized financial brand:\n  Triggers CRITICAL HOMOGRAPH ALERT (+30 pts)."
-    p2.font.size = Pt(12)
-    p2.font.color.rgb = ACCENT_RED
-
-    s6.notes_slide.notes_text_frame.text = (
-        "Here we show our Dynamic Programming implementation. In 3rd semester DSA, DP is a premier topic. "
-        "We implemented the 2D Levenshtein table to detect homograph attacks mathematically."
-    )
+    card(s6, Inches(6.8), Inches(1.72), Inches(5.75), Inches(5.1),
+         "Stack.h — Role 2: URL Domain Reversal", GOLD)
+    bullets(s6, Inches(7.0), Inches(2.42), Inches(5.35), [
+        ("Attack URL: login.easypaisa.com.secure-update.xyz", RED),
+        ("1. Split on '.'  → push all labels to Stack<string>", MUTED),
+        ("2. Pop 1  →  TLD  =  'xyz'", CYAN),
+        ("3. Pop 2  →  SLD  =  'secure-update'  ← REAL domain!", CYAN),
+        ("4. Registrable domain = secure-update.xyz", GREEN),
+        ("5. NOT easypaisa.com!  → Impersonation Flag +35 pts", RED),
+        ("   This is impossible with left-to-right parsing alone.", MUTED),
+    ])
 
     # =========================================================================
-    # SLIDE 7: DEEP DIVE - THREAT GRAPH & BFS
+    # SLIDE 7 — LEVENSHTEIN.H DEEP DIVE
     # =========================================================================
-    s7 = prs.slides.add_slide(blank_layout)
-    add_bg(s7)
-    add_header(s7, "Deep Dive: Threat Syndicate Graph & BFS Crime Ring Discovery")
+    s7 = prs.slides.add_slide(blank); bg(s7)
+    header(s7, "Deep Dive: Levenshtein.h — Dynamic Programming Typosquatting")
 
-    c1 = add_card(s7, Inches(0.8), Inches(1.8), Inches(5.6), Inches(5.0), "Adjacency List Graph Formulation")
-    tb = s7.shapes.add_textbox(Inches(1.0), Inches(2.5), Inches(5.2), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Real scammers distribute attacks across multiple burner numbers and redirect links."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "• Mathematical Graph Formulation G = (V, E):\n   - V (Vertices): Phone numbers, mule accounts, malicious URLs.\n   - E (Edges): Appeared together in the same suspicious payload."
-    p.font.size = Pt(13)
-    p.font.color.rgb = ACCENT_CYAN
-    p2 = tf.add_paragraph()
-    p2.text = "• Stored as an Adjacency List using unordered hash maps for O(1) edge additions and compact O(V + E) space."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_LIGHT
+    card(s7, Inches(0.8), Inches(1.72), Inches(5.65), Inches(5.1),
+         "Levenshtein.h — The Threat: Homograph Domains")
+    bullets(s7, Inches(1.0), Inches(2.42), Inches(5.25), [
+        ("Attackers register look-alike domains:", MUTED),
+        ("  paypa1.com    vs paypal.com    →  distance = 1", RED),
+        ("  easypa1sa.pk  vs easypaisa.pk  →  distance = 1", RED),
+        ("  jazcash.com   vs jazzcash.com  →  distance = 1", RED),
+        ("Exact match FAILS: 'paypa1' ≠ 'paypal' in string compare", GOLD),
+        ("Levenshtein DP catches it in O(M × N) time", GREEN),
+        ("Checks: easypaisa, jazzcash, paypal, hbl, ubl, bisp", CYAN),
+    ])
 
-    c2 = add_card(s7, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.0), "BFS Cluster Traversal", ACCENT_RED)
-    tb = s7.shapes.add_textbox(Inches(7.0), Inches(2.5), Inches(5.3), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Breadth-First Search (BFS) Traversal:\n  Uses our custom Queue<string> from Phase 1 to traverse connected components in O(V + E) time."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_LIGHT
-    p = tf.add_paragraph()
-    p.text = "\n• Live Demonstration:\n  Seed: '+923001111111'\n  ➔ BFS Traversal Discovers:\n     • http://bit.ly/easypaisa-gift\n     • +923212222222\n     • easypa1sa-update.xyz\n     • +923334444444"
-    p.font.size = Pt(12)
-    p.font.color.rgb = ACCENT_CYAN
-    p2 = tf.add_paragraph()
-    p2.text = "\n• Result: Unmasks 5 distinct assets operated by Syndicate #1!"
-    p2.font.size = Pt(12)
-    p2.font.color.rgb = ACCENT_GREEN
-
-    s7.notes_slide.notes_text_frame.text = (
-        "Notice the reuse of our custom Queue in the BFS algorithm. When given one reported phone number, "
-        "BFS crawls the adjacency list to unmask the entire syndicate operating in the shadows."
-    )
+    card(s7, Inches(6.8), Inches(1.72), Inches(5.75), Inches(5.1),
+         "Levenshtein.h — 2D DP Recurrence Formula", GREEN)
+    bullets(s7, Inches(7.0), Inches(2.42), Inches(5.35), [
+        ("dp[0][j] = j   dp[i][0] = i   (base cases)", MUTED),
+        ("", MUTED),
+        ("if s1[i-1] == s2[j-1]:  dp[i][j] = dp[i-1][j-1]", GOLD),
+        ("else: dp[i][j] = 1 + min(", GOLD),
+        ("    dp[i-1][j],      // Delete", CYAN),
+        ("    dp[i][j-1],      // Insert", CYAN),
+        ("    dp[i-1][j-1]     // Replace", CYAN),
+        (") → isTyposquat() if dist ≤ 2  →  ALERT +30 pts", RED),
+    ])
 
     # =========================================================================
-    # SLIDE 8: BINARY MAX-HEAP & ALGORITHM LAB
+    # SLIDE 8 — THREATGRAPH.H + QUEUE.H
     # =========================================================================
-    s8 = prs.slides.add_slide(blank_layout)
-    add_bg(s8)
-    add_header(s8, "Deep Dive: Binary Max-Heap & Algorithm Benchmarking Lab")
+    s8 = prs.slides.add_slide(blank); bg(s8)
+    header(s8, "Deep Dive: ThreatGraph.h + Queue.h — BFS Syndicate Discovery")
 
-    c1 = add_card(s8, Inches(0.8), Inches(1.8), Inches(5.6), Inches(5.0), "Binary Max-Heap: Top-K Clues")
-    tb = s8.shapes.add_textbox(Inches(1.0), Inches(2.5), Inches(5.2), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Array-based complete binary tree where parent(i) >= children(i)."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "• Asymptotics vs Sorting:\n  - QuickSort sorts entire array: O(N log N)\n  - Max-Heap extracts K items: O(K log N)"
-    p.font.size = Pt(13)
-    p.font.color.rgb = ACCENT_CYAN
-    p2 = tf.add_paragraph()
-    p2.text = "• When analyzing messages with dozens of flags, the executive dashboard extracts the Top-3 critical red flags instantaneously."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_LIGHT
+    card(s8, Inches(0.8), Inches(1.72), Inches(5.65), Inches(5.1),
+         "ThreatGraph.h — Graph Structure (Adjacency List)")
+    bullets(s8, Inches(1.0), Inches(2.42), Inches(5.25), [
+        ("unordered_map<string, vector<string>> adjList", CYAN),
+        ("addEntity(url) — adds node if not present", MUTED),
+        ("addLink(A, B) — undirected edge (appeared together)", MUTED),
+        ("bfsCluster(start) — BFS using Queue<string>  O(V+E)", GREEN),
+        ("findAllSyndicates() — all connected components", GREEN),
+        ("Pre-loaded: 2 syndicates ready for live demo!", GOLD),
+        ("vertexCount() — returns total nodes in graph", MUTED),
+    ])
 
-    c2 = add_card(s8, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.0), "The Algorithm Lab: Live Benchmarks", ACCENT_GOLD)
-    tb = s8.shapes.add_textbox(Inches(7.0), Inches(2.5), Inches(2.5), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Built directly into Tab 5 of the GUI to display real algorithmic metrics to evaluators:"
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "• Live Sorting Comparison:\n  - Bubble Sort: O(N^2) baseline\n  - Quick Sort: O(N log N) in-place\n  - Merge Sort: O(N log N) stable"
-    p.font.size = Pt(13)
-    p.font.color.rgb = ACCENT_GOLD
-    p2 = tf.add_paragraph()
-    p2.text = "• Real step-counters track actual comparison and swap operations in real-time."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_LIGHT
-
-    s8.notes_slide.notes_text_frame.text = (
-        "The Algorithm Lab is our showpiece for examiners. We can load an evidence docket and benchmark "
-        "MergeSort against QuickSort and BubbleSort right before their eyes, showing real step counts."
-    )
+    card(s8, Inches(6.8), Inches(1.72), Inches(5.75), Inches(5.1),
+         "Queue.h Powers BFS — FIFO Level-by-Level Traversal", RED)
+    bullets(s8, Inches(7.0), Inches(2.42), Inches(5.35), [
+        ("Seed: '+923001111111'  →  enqueue", CYAN),
+        ("dequeue → visit node → enqueue all unvisited neighbors", MUTED),
+        ("Queue guarantees LEVEL-BY-LEVEL (BFS) traversal", MUTED),
+        ("Syndicate #1 discovered (5 nodes):", GREEN),
+        ("  • http://bit.ly/easypaisa-gift", CYAN),
+        ("  • +923212222222 → easypa1sa-update.xyz", CYAN),
+        ("  • +923334444444", CYAN),
+        ("Syndicate #2: +923459999999 → bisp-claim.top", RED),
+    ])
 
     # =========================================================================
-    # SLIDE 9: DOUBLY LINKED LIST & CIRCULAR BUFFER
+    # SLIDE 9 — MAXHEAP.H + SORTING.H
     # =========================================================================
-    s9 = prs.slides.add_slide(blank_layout)
-    add_bg(s9)
-    add_header(s9, "Telemetry: Doubly Linked List & Circular Ring Buffer")
+    s9 = prs.slides.add_slide(blank); bg(s9)
+    header(s9, "Deep Dive: MaxHeap.h — Top-K Extraction & Sorting.h Lab")
 
-    c1 = add_card(s9, Inches(0.8), Inches(1.8), Inches(5.6), Inches(5.0), "DoublyList<T>: Audit Trail Navigation")
-    tb = s9.shapes.add_textbox(Inches(1.0), Inches(2.5), Inches(5.2), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Contains both next and prev pointers with an active cursor pointer."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "• Powers the '< Previous Scan' and 'Next Scan >' buttons in Tab 6."
-    p.font.size = Pt(13)
-    p.font.color.rgb = ACCENT_CYAN
-    p2 = tf.add_paragraph()
-    p2.text = "• Provides O(1) bidirectional inspection of past investigation dossiers without search queries or array reallocation."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_LIGHT
+    card(s9, Inches(0.8), Inches(1.72), Inches(5.65), Inches(5.1),
+         "MaxHeap.h — Binary Max-Heap Priority Queue")
+    bullets(s9, Inches(1.0), Inches(2.42), Inches(5.25), [
+        ("Array-based complete binary tree", MUTED),
+        ("parent(i)=(i-1)/2  |  children: 2i+1, 2i+2", CYAN),
+        ("insert() → heapifyUp()   — O(log N)", MUTED),
+        ("extractMax() → heapifyDown() — O(log N)", MUTED),
+        ("EvidenceWeightComparator → sorts by threat weight", GOLD),
+        ("Top-3 extraction: O(K log N)  vs  Full sort: O(N log N)", GREEN),
+        ("When K=3 and N=20 flags → Heap is 6× faster!", GREEN),
+    ])
 
-    c2 = add_card(s9, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.0), "CircularBuffer<T>: Rolling Telemetry", ACCENT_GREEN)
-    tb = s9.shapes.add_textbox(Inches(7.0), Inches(2.5), Inches(5.3), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Fixed-capacity memory buffer with head and tail index wrapping: tail = (tail + 1) % capacity"
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_LIGHT
-    p = tf.add_paragraph()
-    p.text = "\n• Purpose: Real-time Telemetry Monitor\n  Keeps exactly the last N (e.g. 5) processed scans in bounded memory."
-    p.font.size = Pt(13)
-    p.font.color.rgb = ACCENT_GREEN
-    p2 = tf.add_paragraph()
-    p2.text = "\n• Zero Memory Fragmentation: When capacity is reached, oldest scans are evicted automatically in O(1) time."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_MUTED
-
-    s9.notes_slide.notes_text_frame.text = (
-        "Here we show the telemetry structures. Doubly linked lists provide O(1) bidirectional cursor stepping, "
-        "while circular ring buffers allow bounded, zero-leak rolling telemetry."
-    )
+    card(s9, Inches(6.8), Inches(1.72), Inches(5.75), Inches(5.1),
+         "Sorting.h — 3 Algorithms with Live SortStats", GOLD)
+    bullets(s9, Inches(7.0), Inches(2.42), Inches(5.35), [
+        ("All 3 algorithms in Sorting.h with SortStats struct:", MUTED),
+        ("BubbleSort  — O(N²)       — worst-case baseline", RED),
+        ("QuickSort   — O(N log N) avg, O(N²) worst — in-place", GOLD),
+        ("MergeSort   — O(N log N) guaranteed — stable", GREEN),
+        ("SortStats tracks: comparisons + swaps in real-time", MUTED),
+        ("Tab 5 shows actual live step counts to evaluators", CYAN),
+        ("RuleBook.h: Binary Search (O log N) vs Linear (O N)", CYAN),
+    ])
 
     # =========================================================================
-    # SLIDE 10: OOP & MEMORY SAFETY
+    # SLIDE 10 — DOUBLYLIST.H + CIRCULARBUFFER.H
     # =========================================================================
-    s10 = prs.slides.add_slide(blank_layout)
-    add_bg(s10)
-    add_header(s10, "Software Engineering: Polymorphism & The Rule of Three")
+    s10 = prs.slides.add_slide(blank); bg(s10)
+    header(s10, "Telemetry: DoublyList.h — Audit Trail & CircularBuffer.h — Ring Buffer")
 
-    c1 = add_card(s10, Inches(0.8), Inches(1.8), Inches(5.6), Inches(5.0), "Polymorphic Detector Battery")
-    tb = s10.shapes.add_textbox(Inches(1.0), Inches(2.5), Inches(5.2), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Abstract Base Class Detector with pure virtual scan() method:"
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "   virtual void scan(const vector<Token>&,\n                     const string& raw,\n                     Stack<Evidence>&) = 0;"
-    p.font.size = Pt(11.5)
-    p.font.color.rgb = ACCENT_CYAN
-    p2 = tf.add_paragraph()
-    p2.text = "\n• Derived classes: KeywordDetector, UrlDetector, PatternDetector.\n• Satisfies Open/Closed Principle: Add new heuristic detectors without touching core engine."
-    p2.font.size = Pt(12)
-    p2.font.color.rgb = TEXT_LIGHT
+    card(s10, Inches(0.8), Inches(1.72), Inches(5.65), Inches(5.1),
+         "DoublyList.h — Bidirectional Audit Trail")
+    bullets(s10, Inches(1.0), Inches(2.42), Inches(5.25), [
+        ("Node: T data  +  Node* prev  +  Node* next", CYAN),
+        ("append() — adds new scan record at tail", MUTED),
+        ("movePrevious() — cursor ← prev node  — O(1)", GREEN),
+        ("moveNext()     — cursor → next node  — O(1)", GREEN),
+        ("getCurrent()   — returns active scan dossier", MUTED),
+        ("Powers '< Previous Scan' & 'Next Scan >' in Tab 6", GOLD),
+        ("Full forensic case file — no scan ever deleted", MUTED),
+    ])
 
-    c2 = add_card(s10, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.0), "Rule of Three & Pointer Safety", ACCENT_RED)
-    tb = s10.shapes.add_textbox(Inches(7.0), Inches(2.5), Inches(5.3), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Manual Dynamic Memory Management:\n  Because structures manage raw heap pointers, default shallow copying causes double-free heap corruption."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "   Stack(const Stack&) = delete;\n   Stack& operator=(const Stack&) = delete;"
-    p.font.size = Pt(12)
-    p.font.color.rgb = ACCENT_GOLD
-    p2 = tf.add_paragraph()
-    p2.text = "\n• Rock-solid destructors traverse and delete all allocated nodes, ensuring ZERO memory leaks under Valgrind/ASan."
-    p2.font.size = Pt(12)
-    p2.font.color.rgb = ACCENT_GREEN
-
-    s10.notes_slide.notes_text_frame.text = (
-        "Memory safety is a major grading factor in C++. By deleting shallow copy constructors and implementing "
-        "clean linked list destructors, we ensure rock-solid memory safety."
-    )
+    card(s10, Inches(6.8), Inches(1.72), Inches(5.75), Inches(5.1),
+         "CircularBuffer.h — Rolling Ring Buffer", GREEN)
+    bullets(s10, Inches(7.0), Inches(2.42), Inches(5.35), [
+        ("Fixed-size array of capacity N (default = 5)", MUTED),
+        ("head, tail indices with modulo wrapping:", CYAN),
+        ("   tail = (tail + 1) % capacity", CYAN),
+        ("push() — O(1), auto-overwrites oldest when full", MUTED),
+        ("toVector() — extracts items in chronological order", MUTED),
+        ("Zero fragmentation — bounded memory always", GREEN),
+        ("Displays last 5 scans in Tab 6 Telemetry panel", GOLD),
+    ])
 
     # =========================================================================
-    # SLIDE 11: THE QT DESKTOP GUI
+    # SLIDE 11 — OOP & MEMORY SAFETY
     # =========================================================================
-    s11 = prs.slides.add_slide(blank_layout)
-    add_bg(s11)
-    add_header(s11, "Interactive Deployment: The Qt 6 Desktop GUI")
+    s11 = prs.slides.add_slide(blank); bg(s11)
+    header(s11, "Software Engineering: Polymorphism, OOP & Memory Safety")
 
-    tabs_info = [
-        ("Tab 1: Investigate", "Live text triage, one-click presets, color-coded verdict banner, animated gauge."),
-        ("Tab 2: Evidence Docket", "LIFO Stack view with a toggle to re-sort by severity via Custom Merge Sort."),
-        ("Tab 3: Top-K & Homographs", "Max-Heap Top-3 threats + interactive 2D DP Levenshtein distance calculator."),
-        ("Tab 4: Syndicate Graph", "Interactive BFS trace unmasking connected phone numbers and scam domains."),
-        ("Tab 5: Algorithm Lab", "Live step-counter comparisons of Bubble Sort vs Quick Sort vs Merge Sort."),
-        ("Tab 6: Audit & Telemetry", "Doubly Linked List Back/Next buttons + Circular Buffer recent scans."),
+    card(s11, Inches(0.8), Inches(1.72), Inches(5.65), Inches(5.1),
+         "Detector.h — Abstract Base Class + Strategy Pattern")
+    bullets(s11, Inches(1.0), Inches(2.42), Inches(5.25), [
+        ("Pure virtual:  virtual scan() = 0  → abstract class", CYAN),
+        ("Cannot instantiate Detector directly — enforced by C++", MUTED),
+        ("3 concrete classes: Keyword / Url / PatternDetector", MUTED),
+        ("Investigator.h: vector<unique_ptr<Detector>> detectors", GOLD),
+        ("Runtime vtable dispatch → polymorphic scan() calls", GREEN),
+        ("Open/Closed Principle: add new Detector without", MUTED),
+        ("  changing Investigator.h — zero engine rewrite needed", GREEN),
+    ])
+
+    card(s11, Inches(6.8), Inches(1.72), Inches(5.75), Inches(5.1),
+         "Rule of Three — Memory Safety Across All Headers", RED)
+    bullets(s11, Inches(7.0), Inches(2.42), Inches(5.35), [
+        ("All templates manage raw Node* heap pointers", MUTED),
+        ("Default shallow copy → double-free heap corruption", RED),
+        ("Stack.h:      copy ctor = delete;  op= = delete", GOLD),
+        ("Queue.h:      copy ctor = delete;  op= = delete", GOLD),
+        ("DoublyList.h: copy ctor = delete;  op= = delete", GOLD),
+        ("Destructors traverse full chain → delete every node", GREEN),
+        ("Result: ZERO memory leaks — Valgrind/ASan verified", GREEN),
+    ])
+
+    # =========================================================================
+    # SLIDE 12 — QT GUI 6 TABS
+    # =========================================================================
+    s12 = prs.slides.add_slide(blank); bg(s12)
+    header(s12, "Qt 6 Desktop GUI — 6 Interactive Tabs & Their Header Files")
+
+    tabs12 = [
+        ("Tab 1: Investigate",
+         "Investigator.h → Normalizer.h → Tokenizer.h\nKeywordDetector.h + UrlDetector.h + PatternDetector.h → Scorer.h",
+         CYAN),
+        ("Tab 2: Evidence Docket (Stack)",
+         "Stack.h — LIFO evidence storage\nSorting.h — MergeSort on 'Sort by Severity' button",
+         GREEN),
+        ("Tab 3: Top-K Threats & Homographs",
+         "MaxHeap.h — Top-3 highest-weight evidence extraction\nLevenshtein.h — Live 2D DP typosquat distance calculator",
+         GOLD),
+        ("Tab 4: Syndicate Graph (BFS)",
+         "ThreatGraph.h — Adjacency list graph + syndicate clustering\nQueue.h — Custom FIFO queue powering BFS traversal",
+         RED),
+        ("Tab 5: Algorithm Lab",
+         "Sorting.h — Live BubbleSort / QuickSort / MergeSort benchmarks\nRuleBook.h — Binary Search vs Linear Search step counter",
+         PURPLE),
+        ("Tab 6: Audit & Telemetry",
+         "DoublyList.h — Back/Next bidirectional navigation\nCircularBuffer.h — Rolling last-5-scans telemetry panel",
+         CYAN),
     ]
+    for idx, (tname, tdesc, col) in enumerate(tabs12):
+        r = idx // 2; c = idx % 2
+        lx = Inches(0.8 + c * 6.1)
+        ty = Inches(1.72 + r * 1.78)
 
-    for idx, (t_name, t_desc) in enumerate(tabs_info):
-        r = idx // 2
-        c = idx % 2
-        l = Inches(0.8 + c * 5.9)
-        t = Inches(1.8 + r * 1.7)
-        card = add_card(s11, l, t, Inches(5.6), Inches(1.5), t_name)
-        tb = s11.shapes.add_textbox(l + Inches(0.2), t + Inches(0.55), Inches(5.2), Inches(0.85))
-        tf = tb.text_frame
-        tf.word_wrap = True
-        tf.paragraphs[0].text = t_desc
-        tf.paragraphs[0].font.size = Pt(11.5)
-        tf.paragraphs[0].font.color.rgb = TEXT_MUTED
+        bx = s12.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                   lx, ty, Inches(5.8), Inches(1.58))
+        bx.fill.solid(); bx.fill.fore_color.rgb = CARD_BG
+        bx.line.color.rgb = col; bx.line.width = Pt(2)
 
-    s11.notes_slide.notes_text_frame.text = (
-        "Here we summarize the Qt 6 GUI. It's not just a wrapper — each tab corresponds to a specific data "
-        "structure and algorithm, giving professors a live window into how the engine works."
-    )
-
-    # =========================================================================
-    # SLIDE 12: VIVA DEFENSE & Q&A
-    # =========================================================================
-    s12 = prs.slides.add_slide(blank_layout)
-    add_bg(s12)
-    add_header(s12, "Viva Defense: Anticipated Evaluator Q&A")
-
-    qa_list = [
-        ("Q: Why not use STL std::stack and std::queue?",
-         "A: STL containers abstract away node allocation. Custom templates demonstrate mastery of raw pointers, dynamic memory, and the Rule of Three from scratch."),
-        ("Q: Why use a Stack for URLs instead of parsing left-to-right?",
-         "A: Attackers front-load fake brand subdomains. The actual destination is always the final two labels. Pushing to a Stack and popping reverses labels in O(L) time."),
-        ("Q: Why is Max-Heap superior to QuickSort for Top-K extraction?",
-         "A: Sorting entire evidence takes O(N log N). A Max-Heap builds in O(N) and extracts K elements in O(K log N). When K << N, Heap is asymptotically faster."),
-        ("Q: How does BFS unmask scam syndicates?",
-         "A: Messages link phone numbers to URLs. BFS explores the Adjacency List to find connected components, proving distinct messages belong to one crime ring.")
-    ]
-
-    for idx, (q, a) in enumerate(qa_list):
-        t = Inches(1.8 + idx * 1.3)
-        card = add_card(s12, Inches(0.8), t, Inches(11.7), Inches(1.15))
-        tb = s12.shapes.add_textbox(Inches(1.0), t + Inches(0.1), Inches(11.3), Inches(0.95))
-        tf = tb.text_frame
-        tf.word_wrap = True
+        tb = s12.shapes.add_textbox(lx+Inches(0.2), ty+Inches(0.1),
+                                    Inches(5.4), Inches(1.4))
+        tf = tb.text_frame; tf.word_wrap = True
         p1 = tf.paragraphs[0]
-        p1.text = q
-        p1.font.bold = True
-        p1.font.size = Pt(12)
-        p1.font.color.rgb = ACCENT_GOLD
+        p1.text = tname; p1.font.size = Pt(13)
+        p1.font.bold = True; p1.font.color.rgb = col
         p2 = tf.add_paragraph()
-        p2.text = a
-        p2.font.size = Pt(11)
-        p2.font.color.rgb = TEXT_LIGHT
-
-    s12.notes_slide.notes_text_frame.text = (
-        "These four questions represent the exact topics examiners focus on. By addressing asymptotic advantages, "
-        "pointer mechanics, and real-world domain requirements, our defense is mathematically bulletproof."
-    )
+        p2.text = tdesc; p2.font.size = Pt(11)
+        p2.font.color.rgb = MUTED
 
     # =========================================================================
-    # SLIDE 13: CONCLUSION & IMPACT
+    # SLIDE 13 — VIVA Q&A
     # =========================================================================
-    s13 = prs.slides.add_slide(blank_layout)
-    add_bg(s13)
-    add_header(s13, "Conclusion & Project Achievements")
+    s13 = prs.slides.add_slide(blank); bg(s13)
+    header(s13, "Viva Defense — Anticipated Evaluator Questions & Winning Answers")
 
-    c1 = add_card(s13, Inches(0.8), Inches(1.8), Inches(5.6), Inches(5.0), "Key Achievements", ACCENT_GREEN)
-    tb = s13.shapes.add_textbox(Inches(1.0), Inches(2.5), Inches(5.2), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "✔ 10 Core DSA Concepts implemented from scratch without STL crutches."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_LIGHT
-    p = tf.add_paragraph()
-    p.text = "✔ 100% Explainable Forensic Reports with Compound Threat Multiplier scoring."
-    p.font.size = Pt(13)
-    p.font.color.rgb = TEXT_LIGHT
-    p2 = tf.add_paragraph()
-    p2.text = "✔ Dual-mode interface: Standalone CLI Test Suite + Interactive Qt 6 GUI."
-    p2.font.size = Pt(13)
-    p2.font.color.rgb = TEXT_LIGHT
-    p3 = tf.add_paragraph()
-    p3.text = "✔ Sub-millisecond deterministic triage suitable for high-throughput gateway filtering."
-    p3.font.size = Pt(13)
-    p3.font.color.rgb = ACCENT_CYAN
+    qa = [
+        ("Q: Why implement Stack/Queue from scratch instead of using STL?",
+         "A: STL abstracts node allocation. Custom templates demonstrate raw pointer mastery, Rule of Three, O(1) linked-list operations, and proper destructor design — which is the core DSA skill being evaluated.",
+         GOLD),
+        ("Q: Why use a Stack for URL parsing instead of left-to-right string split?",
+         "A: Attackers front-load fake brands in subdomains (login.easypaisa.com.evil.xyz). The real domain is always the LAST 2 labels. Stack.h reverses them in O(L) — the only correct approach for subdomain spoofing.",
+         CYAN),
+        ("Q: Why MaxHeap over QuickSort for Top-3 extraction?",
+         "A: Sorting all N evidence items costs O(N log N). MaxHeap builds in O(N) and extracts K=3 items in O(K log N). When K=3 and N=20 flags, Heap performs ~6× fewer operations.",
+         GREEN),
+        ("Q: How does BFS detect scam syndicates?",
+         "A: Each URL/phone is a graph node. addLink() creates an edge when two entities appear in the same message. BFS from a seed node explores ALL connected nodes via our custom Queue<string> in O(V+E) — revealing the full crime ring.",
+         RED),
+    ]
+    for idx, (q, a, col) in enumerate(qa):
+        ty = Inches(1.72 + idx * 1.33)
+        bx = s13.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                   Inches(0.8), ty, Inches(11.7), Inches(1.18))
+        bx.fill.solid(); bx.fill.fore_color.rgb = CARD_BG
+        bx.line.color.rgb = col; bx.line.width = Pt(1.8)
+        tb = s13.shapes.add_textbox(Inches(1.0), ty+Inches(0.07),
+                                    Inches(11.3), Inches(1.05))
+        tf = tb.text_frame; tf.word_wrap = True
+        p1 = tf.paragraphs[0]
+        p1.text = q; p1.font.bold = True
+        p1.font.size = Pt(12); p1.font.color.rgb = col
+        p2 = tf.add_paragraph()
+        p2.text = a; p2.font.size = Pt(11)
+        p2.font.color.rgb = WHITE
 
-    c2 = add_card(s13, Inches(6.8), Inches(1.8), Inches(5.7), Inches(5.0), "Future Scope & Extensions", ACCENT_CYAN)
-    tb = s13.shapes.add_textbox(Inches(7.0), Inches(2.5), Inches(5.3), Inches(4.0))
-    tf = tb.text_frame
-    tf.word_wrap = True
-    tf.paragraphs[0].text = "• Aho-Corasick Automaton: Upgrade Trie with failure transitions for single-pass multi-pattern matching."
-    tf.paragraphs[0].font.size = Pt(13)
-    tf.paragraphs[0].font.color.rgb = TEXT_MUTED
-    p = tf.add_paragraph()
-    p.text = "• Live GSM Modem Sniffer: Direct serial hook to SIM800L / Android ADB for real-time incoming SMS packet triage."
-    p.font.size = Pt(13)
-    p.font.color.rgb = TEXT_MUTED
-    p2 = tf.add_paragraph()
-    p2.text = "\nThank you!\nWe are now open for faculty evaluation and questions."
-    p2.font.size = Pt(16)
-    p2.font.bold = True
-    p2.font.color.rgb = ACCENT_GOLD
+    # =========================================================================
+    # SLIDE 14 — CONCLUSION
+    # =========================================================================
+    s14 = prs.slides.add_slide(blank); bg(s14)
+    header(s14, "Conclusion — Project Achievements & Future Scope")
 
-    s13.notes_slide.notes_text_frame.text = (
-        "Thank you for your time and evaluation. CipherTrace demonstrates that data structures are not just textbook "
-        "theory, but the foundation of high-performance cyber intelligence. We welcome your questions."
+    card(s14, Inches(0.8), Inches(1.72), Inches(5.65), Inches(5.1),
+         "Key Achievements", GREEN)
+    bullets(s14, Inches(1.0), Inches(2.42), Inches(5.25), [
+        ("✔ 10 Custom DSA implementations — zero STL containers", WHITE),
+        ("  Stack.h, Queue.h, DoublyList.h, CircularBuffer.h", CYAN),
+        ("  MaxHeap.h, ThreatGraph.h, Levenshtein.h, Sorting.h", CYAN),
+        ("  RuleBook.h, Normalizer.h, Tokenizer.h, Detector hierarchy", CYAN),
+        ("✔ 100% explainable forensic verdict + Phishing Triad penalty", WHITE),
+        ("✔ Dual-mode: CLI test suite + Qt 6 dark-theme GUI", WHITE),
+        ("✔ Pakistan-specific: Easypaisa, JazzCash, BISP brands", GREEN),
+    ])
+
+    card(s14, Inches(6.8), Inches(1.72), Inches(5.75), Inches(5.1),
+         "Future Scope & Extensions", CYAN)
+    bullets(s14, Inches(7.0), Inches(2.42), Inches(5.35), [
+        ("• Trie + Aho-Corasick: O(k) multi-pattern keyword matching", MUTED),
+        ("• Live GSM hook via SIM800L/ADB for real-time SMS scan", MUTED),
+        ("• SQLite-backed DoublyList for persistent cross-session audit", MUTED),
+        ("• REST API wrapper for web & mobile integration", MUTED),
+        ("", MUTED),
+        ("Thank you!", GOLD),
+        ("We welcome your questions and evaluation.", WHITE),
+    ])
+
+    s14.notes_slide.notes_text_frame.text = (
+        "Thank you. CipherTrace proves that Data Structures are not just textbook theory "
+        "but the foundation of high-performance, explainable cybersecurity systems. "
+        "We welcome all questions from the evaluation committee."
     )
 
-    output_path = os.path.abspath(r"c:\Users\LENOVO\OneDrive\Desktop\Data-Structure-and-Algorithm-\CCP\Cipher Trace\docs\CipherTrace_Presentation.pptx")
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    prs.save(output_path)
-    print(f"Presentation saved successfully to: {output_path}")
+    # ── Save ──────────────────────────────────────────────────────────────────
+    out = os.path.abspath(
+        r"c:\Users\LENOVO\OneDrive\Desktop\Data-Structure-and-Algorithm-"
+        r"\CCP\Cipher Trace\docs\CipherTrace_Presentation.pptx"
+    )
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    prs.save(out)
+    print(f"✅  Presentation saved → {out}")
+    print(f"📊  Total slides: 14")
 
 if __name__ == "__main__":
     create_deck()
